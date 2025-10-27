@@ -27,6 +27,7 @@ This repository contains a collection of standalone HTML+JavaScript utility tool
 ### CSS and Styling
 - All CSS must be embedded in `<style>` tags within the HTML file
 - **Mobile-friendly responsive design is required**
+- **Design should be minimalistic** - focus on clean, simple aesthetics with ample whitespace
 - Use responsive units (%, vh, vw, rem, em) and media queries
 - Test layouts on mobile, tablet, and desktop screen sizes
 - Consider touch-friendly UI elements (larger buttons, adequate spacing)
