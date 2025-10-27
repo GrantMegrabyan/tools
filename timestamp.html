@@ -13,76 +13,81 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f8f9fa;
             min-height: 100vh;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            padding: 40px 20px;
         }
 
         .container {
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 30px;
             max-width: 600px;
-            width: 100%;
+            margin: 0 auto;
+            padding: 60px 40px;
         }
 
         h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
+            color: #1a1a1a;
+            margin-bottom: 48px;
+            font-size: 24px;
+            font-weight: 400;
             text-align: center;
+            letter-spacing: -0.5px;
         }
 
         .current-time {
             text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            padding: 15px;
-            background: #f5f5f5;
-            border-radius: 8px;
+            color: #6b7280;
+            margin-bottom: 48px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
         }
 
         .current-time .label {
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            color: #9ca3af;
         }
 
         .current-time .value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
+            font-size: 20px;
+            font-weight: 300;
+            color: #1a1a1a;
             font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .current-time .value:hover {
+            opacity: 0.6;
+        }
+
+        .current-time .value:active {
+            opacity: 0.4;
         }
 
         .converter-section {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 12px;
+            margin-bottom: 48px;
         }
 
         .converter-section h2 {
-            font-size: 18px;
-            color: #555;
-            margin-bottom: 15px;
+            font-size: 14px;
+            color: #1a1a1a;
+            margin-bottom: 24px;
+            font-weight: 400;
         }
 
         .input-group {
-            margin-bottom: 15px;
+            margin-bottom: 24px;
         }
 
         label {
             display: block;
-            margin-bottom: 5px;
-            color: #666;
-            font-size: 14px;
-            font-weight: 500;
+            margin-bottom: 8px;
+            color: #6b7280;
+            font-size: 13px;
+            font-weight: 400;
         }
 
         input[type="text"],
@@ -90,48 +95,44 @@
         input[type="datetime-local"] {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
+            border: 1px solid #e5e7eb;
+            border-radius: 0;
+            font-size: 15px;
+            transition: border-color 0.2s;
+            background: white;
         }
 
         input[type="text"]:focus,
         input[type="number"]:focus,
         input[type="datetime-local"]:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #1a1a1a;
         }
 
         button {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #1a1a1a;
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 0;
+            font-size: 14px;
+            font-weight: 400;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 10px;
+            transition: background 0.2s;
+            margin-top: 16px;
+            letter-spacing: 0.5px;
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        button:active {
-            transform: translateY(0);
+            background: #374151;
         }
 
         .result {
-            margin-top: 15px;
-            padding: 12px;
-            background: white;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
+            margin-top: 24px;
+            padding: 16px;
+            background: #f9fafb;
+            border-left: 2px solid #1a1a1a;
             display: none;
         }
 
@@ -140,44 +141,55 @@
         }
 
         .result-label {
-            font-size: 12px;
-            color: #999;
-            margin-bottom: 5px;
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .result-value {
-            font-size: 18px;
-            color: #333;
-            font-weight: 600;
+            font-size: 15px;
+            color: #1a1a1a;
+            font-weight: 400;
             word-break: break-all;
         }
 
         .history {
-            margin-top: 30px;
+            margin-top: 64px;
+            padding-top: 32px;
+            border-top: 1px solid #e5e7eb;
         }
 
         .history h2 {
-            font-size: 18px;
-            color: #555;
-            margin-bottom: 15px;
+            font-size: 14px;
+            color: #1a1a1a;
+            margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-weight: 400;
         }
 
         .clear-history {
-            background: #ff4757;
-            color: white;
-            border: none;
+            background: transparent;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
             padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
+            border-radius: 0;
+            font-size: 11px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            width: auto;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .clear-history:hover {
-            background: #ee5a6f;
+            background: #1a1a1a;
+            color: white;
+            border-color: #1a1a1a;
         }
 
         .history-list {
@@ -185,66 +197,91 @@
         }
 
         .history-item {
-            padding: 12px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            font-size: 14px;
-            border-left: 3px solid #764ba2;
+            padding: 16px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 13px;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
         }
 
         .history-item .type {
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 4px;
+            font-weight: 400;
+            color: #6b7280;
+            margin-bottom: 6px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .history-item .details {
-            color: #666;
+            color: #1a1a1a;
             font-family: 'Courier New', monospace;
-            font-size: 12px;
+            font-size: 13px;
         }
 
         .history-empty {
             text-align: center;
-            color: #999;
-            padding: 20px;
-            font-style: italic;
+            color: #9ca3af;
+            padding: 32px;
+            font-size: 13px;
         }
 
         @media (max-width: 768px) {
-            .container {
+            body {
                 padding: 20px;
             }
 
-            h1 {
-                font-size: 24px;
+            .container {
+                padding: 40px 24px;
             }
 
-            .current-time .value {
-                font-size: 20px;
+            h1 {
+                font-size: 22px;
+                margin-bottom: 40px;
+            }
+
+            .current-time {
+                margin-bottom: 40px;
+                padding: 20px;
             }
 
             .converter-section {
-                padding: 15px;
+                margin-bottom: 40px;
             }
         }
 
         @media (max-width: 480px) {
             body {
-                padding: 10px;
+                padding: 16px;
             }
 
             .container {
-                padding: 15px;
+                padding: 32px 20px;
             }
 
             h1 {
                 font-size: 20px;
+                margin-bottom: 32px;
+            }
+
+            .current-time {
+                margin-bottom: 32px;
+                padding: 16px;
             }
 
             .current-time .value {
                 font-size: 18px;
+            }
+
+            .converter-section {
+                margin-bottom: 32px;
+            }
+
+            .history {
+                margin-top: 48px;
+                padding-top: 24px;
             }
         }
     </style>
@@ -255,7 +292,7 @@
 
         <div class="current-time">
             <div class="label">Current Unix Timestamp</div>
-            <div class="value" id="currentTimestamp">-</div>
+            <div class="value" id="currentTimestamp" onclick="copyCurrentTimestamp()" title="Click to copy">-</div>
         </div>
 
         <!-- Timestamp to DateTime -->
@@ -307,6 +344,22 @@
 
         updateCurrentTimestamp();
         setInterval(updateCurrentTimestamp, 1000);
+
+        // Copy current timestamp to clipboard
+        function copyCurrentTimestamp() {
+            const timestamp = document.getElementById('currentTimestamp').textContent;
+            navigator.clipboard.writeText(timestamp).then(() => {
+                // Visual feedback
+                const element = document.getElementById('currentTimestamp');
+                const originalText = element.textContent;
+                element.textContent = 'Copied!';
+                setTimeout(() => {
+                    element.textContent = originalText;
+                }, 800);
+            }).catch(err => {
+                alert('Failed to copy: ' + err);
+            });
+        }
 
         // Convert timestamp to datetime
         function convertTimestampToDateTime() {
