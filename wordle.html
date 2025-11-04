@@ -128,6 +128,17 @@
             100% { transform: scale(1); }
         }
 
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+            20%, 40%, 60%, 80% { transform: translateX(8px); }
+        }
+
+        .tile.invalid {
+            border-color: #dc3545;
+            animation: shake 0.5s ease;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -238,6 +249,60 @@
             line-height: 1.6;
         }
 
+        .letter-tracker {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .letter-tracker h3 {
+            color: #667eea;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .letter-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .letter-item {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 2px solid #d3d6da;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .letter-item.absent {
+            color: #787c7e;
+            text-decoration: line-through;
+            background: #f0f0f0;
+            opacity: 0.6;
+        }
+
+        .letter-item.used-correct {
+            background: #6aaa64;
+            color: white;
+            border-color: #6aaa64;
+        }
+
+        .letter-item.used-present {
+            background: #c9b458;
+            color: white;
+            border-color: #c9b458;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -281,6 +346,11 @@
 
         <div id="gameBoard" class="game-board"></div>
 
+        <div id="letterTracker" class="letter-tracker" style="display: none;">
+            <h3>Letters</h3>
+            <div id="letterGrid" class="letter-grid"></div>
+        </div>
+
         <div id="endGameButtons" class="end-game-buttons" style="display: none;">
             <button id="definitionBtn">📖 Definition</button>
         </div>
@@ -314,6 +384,12 @@
                     <option value="10">10 attempts</option>
                 </select>
             </div>
+            <div class="setting-group">
+                <label>
+                    <input type="checkbox" id="showLetterTracker" checked>
+                    Show Letter Tracker
+                </label>
+            </div>
             <div class="modal-buttons">
                 <button id="cancelSettings">Cancel</button>
                 <button id="saveSettings">Save & New Game</button>
@@ -329,6 +405,8 @@
         let gameOver = false;
         let wordLength = 5;
         let maxAttempts = 6;
+        let showLetterTracker = true;
+        let letterStatus = {}; // Track status of each letter
 
         // DOM elements
         const gameBoard = document.getElementById('gameBoard');
@@ -344,18 +422,65 @@
         const endGameButtons = document.getElementById('endGameButtons');
         const definitionBtn = document.getElementById('definitionBtn');
         const definitionBox = document.getElementById('definitionBox');
+        const letterTracker = document.getElementById('letterTracker');
+        const letterGrid = document.getElementById('letterGrid');
+        const showLetterTrackerCheckbox = document.getElementById('showLetterTracker');
 
         // Initialize game
         async function initGame() {
             gameOver = false;
             currentRow = 0;
             currentTile = 0;
+            letterStatus = {};
             message.textContent = '';
             message.className = 'message';
             endGameButtons.style.display = 'none';
             definitionBox.style.display = 'none';
             createBoard();
+            createLetterTracker();
+            updateLetterTrackerVisibility();
             await fetchRandomWord();
+        }
+
+        // Create letter tracker
+        function createLetterTracker() {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            letterGrid.innerHTML = '';
+
+            for (let letter of alphabet) {
+                const letterItem = document.createElement('div');
+                letterItem.className = 'letter-item';
+                letterItem.textContent = letter;
+                letterItem.setAttribute('data-letter', letter);
+                letterGrid.appendChild(letterItem);
+                letterStatus[letter] = 'unused';
+            }
+        }
+
+        // Update letter tracker visibility
+        function updateLetterTrackerVisibility() {
+            letterTracker.style.display = showLetterTracker ? 'block' : 'none';
+        }
+
+        // Update letter in tracker
+        function updateLetterTracker(letter, status) {
+            // Priority: correct > present > absent
+            const currentStatus = letterStatus[letter];
+            if (currentStatus === 'correct') return;
+            if (currentStatus === 'present' && status === 'absent') return;
+
+            letterStatus[letter] = status;
+            const letterItem = document.querySelector(`[data-letter="${letter}"]`);
+            if (letterItem) {
+                letterItem.className = 'letter-item';
+                if (status === 'correct') {
+                    letterItem.classList.add('used-correct');
+                } else if (status === 'present') {
+                    letterItem.classList.add('used-present');
+                } else if (status === 'absent') {
+                    letterItem.classList.add('absent');
+                }
+            }
         }
 
         // Create game board
@@ -386,7 +511,6 @@
 
                 if (data && data[0]) {
                     targetWord = data[0].toUpperCase();
-                    console.log('Target word:', targetWord); // For debugging
                 } else {
                     throw new Error('No word received');
                 }
@@ -443,14 +567,45 @@
             }
         }
 
+        // Validate word using dictionary API
+        async function validateWord(word) {
+            try {
+                const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`);
+                return response.ok;
+            } catch (error) {
+                console.error('Error validating word:', error);
+                return true; // If API fails, allow the word
+            }
+        }
+
         // Submit guess
-        function submitGuess() {
+        async function submitGuess() {
             if (currentTile !== wordLength) {
                 showMessage('Not enough letters', 'lose', 1500);
                 return;
             }
 
             const guess = getCurrentGuess();
+
+            // Validate that the guess is a proper word
+            const isValid = await validateWord(guess);
+            if (!isValid) {
+                // Show shake animation and red borders
+                for (let i = 0; i < wordLength; i++) {
+                    const tile = document.querySelector(`[data-row="${currentRow}"][data-tile="${i}"]`);
+                    tile.classList.add('invalid');
+                }
+
+                // Remove invalid class after animation completes
+                setTimeout(() => {
+                    for (let i = 0; i < wordLength; i++) {
+                        const tile = document.querySelector(`[data-row="${currentRow}"][data-tile="${i}"]`);
+                        tile.classList.remove('invalid');
+                    }
+                }, 500);
+                return;
+            }
+
             checkGuess(guess);
 
             if (guess === targetWord) {
@@ -483,32 +638,36 @@
         function checkGuess(guess) {
             const targetLetters = targetWord.split('');
             const guessLetters = guess.split('');
-            const letterStatus = new Array(wordLength).fill('absent');
+            const tileStatus = new Array(wordLength).fill('absent');
 
             // First pass: mark correct letters
             for (let i = 0; i < wordLength; i++) {
                 if (guessLetters[i] === targetLetters[i]) {
-                    letterStatus[i] = 'correct';
+                    tileStatus[i] = 'correct';
                     targetLetters[i] = null;
                 }
             }
 
             // Second pass: mark present letters
             for (let i = 0; i < wordLength; i++) {
-                if (letterStatus[i] === 'correct') continue;
+                if (tileStatus[i] === 'correct') continue;
 
                 const letterIndex = targetLetters.indexOf(guessLetters[i]);
                 if (letterIndex !== -1) {
-                    letterStatus[i] = 'present';
+                    tileStatus[i] = 'present';
                     targetLetters[letterIndex] = null;
                 }
             }
 
-            // Apply colors to tiles
+            // Apply colors to tiles and update letter tracker
             for (let i = 0; i < wordLength; i++) {
                 const tile = document.querySelector(`[data-row="${currentRow}"][data-tile="${i}"]`);
+                const letter = guessLetters[i];
+                const status = tileStatus[i];
+
                 setTimeout(() => {
-                    tile.classList.add(letterStatus[i]);
+                    tile.classList.add(status);
+                    updateLetterTracker(letter, status);
                 }, i * 200);
             }
         }
@@ -585,8 +744,14 @@
         saveSettings.addEventListener('click', () => {
             wordLength = parseInt(wordLengthSelect.value);
             maxAttempts = parseInt(maxAttemptsSelect.value);
+            showLetterTracker = showLetterTrackerCheckbox.checked;
             settingsModal.classList.remove('active');
             initGame();
+        });
+
+        showLetterTrackerCheckbox.addEventListener('change', () => {
+            showLetterTracker = showLetterTrackerCheckbox.checked;
+            updateLetterTrackerVisibility();
         });
 
         newGameBtn.addEventListener('click', () => {
