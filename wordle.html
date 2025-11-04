@@ -303,6 +303,13 @@
             border-color: #c9b458;
         }
 
+        #hiddenInput {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            left: -9999px;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -357,6 +364,9 @@
 
         <div id="definitionBox" class="definition-box" style="display: none;"></div>
     </div>
+
+    <!-- Hidden input for mobile keyboard -->
+    <input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
     <!-- Settings Modal -->
     <div id="settingsModal" class="modal">
@@ -425,6 +435,7 @@
         const letterTracker = document.getElementById('letterTracker');
         const letterGrid = document.getElementById('letterGrid');
         const showLetterTrackerCheckbox = document.getElementById('showLetterTracker');
+        const hiddenInput = document.getElementById('hiddenInput');
 
         // Initialize game
         async function initGame() {
@@ -440,6 +451,7 @@
             createLetterTracker();
             updateLetterTrackerVisibility();
             await fetchRandomWord();
+            setTimeout(() => hiddenInput.focus(), 100);
         }
 
         // Create letter tracker
@@ -730,8 +742,50 @@
 
         // Event listeners
         document.addEventListener('keydown', (e) => {
-            handleKey(e.key);
+            // Only handle if not coming from hidden input
+            if (e.target !== hiddenInput) {
+                handleKey(e.key);
+            }
         });
+
+        // Focus hidden input when clicking on game board to trigger mobile keyboard
+        gameBoard.addEventListener('click', () => {
+            if (!gameOver) {
+                hiddenInput.focus();
+            }
+        });
+
+        // Handle input from hidden input (for mobile)
+        hiddenInput.addEventListener('input', (e) => {
+            const value = e.target.value;
+            if (value) {
+                const lastChar = value[value.length - 1];
+                handleKey(lastChar.toUpperCase());
+                hiddenInput.value = '';
+            }
+        });
+
+        // Handle backspace and enter on hidden input
+        hiddenInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' || e.key === 'Enter') {
+                handleKey(e.key);
+                e.preventDefault();
+            } else if (/^[A-Za-z]$/.test(e.key)) {
+                // For letter keys, let the input event handle it
+                e.preventDefault();
+                handleKey(e.key.toUpperCase());
+            }
+        });
+
+        // Keep focus on hidden input during gameplay
+        hiddenInput.addEventListener('blur', () => {
+            if (!gameOver) {
+                setTimeout(() => hiddenInput.focus(), 0);
+            }
+        });
+
+        // Auto-focus on game start
+        setTimeout(() => hiddenInput.focus(), 100);
 
         settingsBtn.addEventListener('click', () => {
             settingsModal.classList.add('active');
