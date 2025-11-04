@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Repositories Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+
+        .auth-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-options {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .auth-method {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .auth-method h3 {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-method p {
+            font-size: 0.875rem;
+            color: #666;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            margin-top: 1rem;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        .search-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding-left: 2.5rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .stats {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-item strong {
+            color: #667eea;
+            font-size: 1.25rem;
+        }
+
+        .stat-item span {
+            color: #666;
+            font-size: 0.875rem;
+            margin-left: 0.5rem;
+        }
+
+        .repos-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #667eea;
+            font-size: 1.125rem;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .repo-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .repo-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        .repo-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.1);
+        }
+
+        .repo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.75rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .repo-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-word;
+        }
+
+        .repo-name:hover {
+            text-decoration: underline;
+        }
+
+        .repo-visibility {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .repo-visibility.public {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .repo-visibility.private {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .repo-description {
+            color: #666;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .repo-stats {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            font-size: 0.875rem;
+            color: #555;
+        }
+
+        .repo-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .repo-stat-icon {
+            opacity: 0.7;
+        }
+
+        .language-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .last-commit {
+            color: #999;
+            font-size: 0.875rem;
+            margin-top: 0.75rem;
+        }
+
+        .no-repos {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #667eea;
+        }
+
+        .user-details h2 {
+            color: #333;
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-details p {
+            color: #666;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+
+            .header {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .auth-options {
+                flex-direction: column;
+            }
+
+            .auth-method {
+                min-width: 100%;
+            }
+
+            .repos-container {
+                padding: 1rem;
+            }
+
+            .repo-card {
+                padding: 1rem;
+            }
+
+            .repo-stats {
+                gap: 1rem;
+            }
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.875rem;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .sort-options {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .sort-options label {
+            color: #666;
+            font-size: 0.875rem;
+        }
+
+        .sort-options select {
+            padding: 0.5rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .sort-options select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 GitHub Repositories Dashboard</h1>
+
+            <div id="authSection" class="auth-section">
+                <div class="auth-options">
+                    <div class="auth-method">
+                        <h3>🔑 Personal Access Token</h3>
+                        <p>Generate a token from GitHub Settings → Developer settings → Personal access tokens</p>
+                        <input type="password" id="tokenInput" placeholder="Enter your GitHub token">
+                        <button id="tokenLoginBtn" style="margin-top: 0.75rem;">Connect with Token</button>
+                    </div>
+                    <div class="auth-method">
+                        <h3>🔐 OAuth Authentication</h3>
+                        <p>Set up a GitHub OAuth app with your Client ID</p>
+                        <input type="text" id="clientIdInput" placeholder="Enter OAuth Client ID">
+                        <button id="oauthLoginBtn" style="margin-top: 0.75rem;">Connect with OAuth</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="userSection" style="display: none;">
+                <div id="userInfo" class="user-info"></div>
+                <div class="stats" id="statsContainer"></div>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+
+        <div id="mainContent" style="display: none;">
+            <div class="repos-container">
+                <div class="search-section">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Search repositories...">
+                    </div>
+                </div>
+
+                <div class="filters" id="filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="public">Public</button>
+                    <button class="filter-btn" data-filter="private">Private</button>
+                    <button class="filter-btn" data-filter="fork">Forks</button>
+                    <button class="filter-btn" data-filter="source">Sources</button>
+                </div>
+
+                <div class="sort-options">
+                    <label for="sortSelect">Sort by:</label>
+                    <select id="sortSelect">
+                        <option value="updated">Last Updated</option>
+                        <option value="stars">Stars</option>
+                        <option value="name">Name</option>
+                        <option value="created">Created Date</option>
+                    </select>
+                </div>
+
+                <div id="reposContainer">
+                    <div class="loading">Loading repositories...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const GITHUB_API_BASE = 'https://api.github.com';
+        const GITHUB_OAUTH_AUTHORIZE = 'https://github.com/login/oauth/authorize';
+
+        // State
+        let accessToken = null;
+        let allRepos = [];
+        let filteredRepos = [];
+        let currentFilter = 'all';
+        let currentSort = 'updated';
+        let userData = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkExistingAuth();
+            setupEventListeners();
+            handleOAuthCallback();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('tokenLoginBtn').addEventListener('click', loginWithToken);
+            document.getElementById('oauthLoginBtn').addEventListener('click', loginWithOAuth);
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('searchInput').addEventListener('input', handleSearch);
+            document.getElementById('sortSelect').addEventListener('change', handleSortChange);
+
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    filterAndDisplayRepos();
+                });
+            });
+        }
+
+        function checkExistingAuth() {
+            const token = localStorage.getItem('github_token');
+            if (token) {
+                accessToken = token;
+                initializeDashboard();
+            }
+        }
+
+        function loginWithToken() {
+            const token = document.getElementById('tokenInput').value.trim();
+            if (!token) {
+                alert('Please enter a valid token');
+                return;
+            }
+
+            accessToken = token;
+            localStorage.setItem('github_token', token);
+            initializeDashboard();
+        }
+
+        function loginWithOAuth() {
+            const clientId = document.getElementById('clientIdInput').value.trim();
+            if (!clientId) {
+                alert('Please enter your OAuth Client ID');
+                return;
+            }
+
+            localStorage.setItem('github_oauth_client_id', clientId);
+
+            const redirectUri = window.location.origin + window.location.pathname;
+            const scope = 'repo read:user';
+            const authUrl = `${GITHUB_OAUTH_AUTHORIZE}?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
+
+            window.location.href = authUrl;
+        }
+
+        function handleOAuthCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+
+            if (code) {
+                // Note: In a real OAuth flow, you'd need a backend to exchange the code for a token
+                // For a client-side only app, users should use Personal Access Tokens
+                alert('OAuth code received. Note: You need a backend server to complete the OAuth flow. Please use a Personal Access Token instead for this standalone tool.');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        async function initializeDashboard() {
+            try {
+                await fetchUserData();
+                await fetchRepositories();
+                showDashboard();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                alert('Failed to authenticate. Please check your token and try again.');
+                logout();
+            }
+        }
+
+        async function fetchUserData() {
+            const response = await fetch(`${GITHUB_API_BASE}/user`, {
+                headers: {
+                    'Authorization': `token ${accessToken}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+
+            userData = await response.json();
+            displayUserInfo();
+        }
+
+        function displayUserInfo() {
+            const userInfoHtml = `
+                <img src="${userData.avatar_url}" alt="${userData.login}" class="user-avatar">
+                <div class="user-details">
+                    <h2>${userData.name || userData.login}</h2>
+                    <p>@${userData.login} ${userData.bio ? '• ' + userData.bio : ''}</p>
+                </div>
+            `;
+            document.getElementById('userInfo').innerHTML = userInfoHtml;
+        }
+
+        async function fetchRepositories() {
+            const reposContainer = document.getElementById('reposContainer');
+            reposContainer.innerHTML = '<div class="loading">Loading repositories...</div>';
+
+            try {
+                let page = 1;
+                let allReposData = [];
+                let hasMore = true;
+
+                // Fetch all pages
+                while (hasMore) {
+                    const response = await fetch(`${GITHUB_API_BASE}/user/repos?per_page=100&page=${page}&sort=updated&direction=desc`, {
+                        headers: {
+                            'Authorization': `token ${accessToken}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch repositories');
+                    }
+
+                    const repos = await response.json();
+                    if (repos.length === 0) {
+                        hasMore = false;
+                    } else {
+                        allReposData = allReposData.concat(repos);
+                        page++;
+                    }
+                }
+
+                // Fetch additional details for each repo
+                allRepos = await Promise.all(allReposData.map(async (repo) => {
+                    try {
+                        // Fetch commit count (approximate from recent commits)
+                        const commitsResponse = await fetch(repo.commits_url.replace('{/sha}', ''), {
+                            headers: {
+                                'Authorization': `token ${accessToken}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        });
+
+                        let commitCount = 0;
+                        if (commitsResponse.ok) {
+                            const linkHeader = commitsResponse.headers.get('Link');
+                            if (linkHeader) {
+                                const match = linkHeader.match(/page=(\d+)>; rel="last"/);
+                                commitCount = match ? parseInt(match[1]) * 30 : 30; // Approximate
+                            } else {
+                                const commits = await commitsResponse.json();
+                                commitCount = commits.length;
+                            }
+                        }
+
+                        // Fetch contributors count
+                        const contributorsResponse = await fetch(repo.contributors_url, {
+                            headers: {
+                                'Authorization': `token ${accessToken}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        });
+
+                        let contributorsCount = 0;
+                        if (contributorsResponse.ok) {
+                            const contributors = await contributorsResponse.json();
+                            contributorsCount = Array.isArray(contributors) ? contributors.length : 0;
+                        }
+
+                        return {
+                            ...repo,
+                            commitCount,
+                            contributorsCount
+                        };
+                    } catch (error) {
+                        console.error(`Error fetching details for ${repo.name}:`, error);
+                        return {
+                            ...repo,
+                            commitCount: 0,
+                            contributorsCount: 0
+                        };
+                    }
+                }));
+
+                displayStats();
+                filterAndDisplayRepos();
+            } catch (error) {
+                console.error('Error fetching repositories:', error);
+                reposContainer.innerHTML = '<div class="error">Failed to load repositories. Please try again.</div>';
+            }
+        }
+
+        function displayStats() {
+            const totalRepos = allRepos.length;
+            const totalStars = allRepos.reduce((sum, repo) => sum + repo.stargazers_count, 0);
+            const totalForks = allRepos.reduce((sum, repo) => sum + repo.forks_count, 0);
+            const publicRepos = allRepos.filter(r => !r.private).length;
+            const privateRepos = allRepos.filter(r => r.private).length;
+
+            const statsHtml = `
+                <div class="stat-item"><strong>${totalRepos}</strong> <span>Repositories</span></div>
+                <div class="stat-item"><strong>${totalStars}</strong> <span>Stars</span></div>
+                <div class="stat-item"><strong>${totalForks}</strong> <span>Forks</span></div>
+                <div class="stat-item"><strong>${publicRepos}</strong> <span>Public</span></div>
+                <div class="stat-item"><strong>${privateRepos}</strong> <span>Private</span></div>
+            `;
+            document.getElementById('statsContainer').innerHTML = statsHtml;
+        }
+
+        function filterAndDisplayRepos() {
+            // Apply filters
+            filteredRepos = allRepos.filter(repo => {
+                switch (currentFilter) {
+                    case 'public':
+                        return !repo.private;
+                    case 'private':
+                        return repo.private;
+                    case 'fork':
+                        return repo.fork;
+                    case 'source':
+                        return !repo.fork;
+                    default:
+                        return true;
+                }
+            });
+
+            // Apply search
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                filteredRepos = filteredRepos.filter(repo =>
+                    repo.name.toLowerCase().includes(searchTerm) ||
+                    (repo.description && repo.description.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            // Apply sort
+            sortRepos();
+            displayRepositories();
+        }
+
+        function sortRepos() {
+            filteredRepos.sort((a, b) => {
+                switch (currentSort) {
+                    case 'updated':
+                        return new Date(b.updated_at) - new Date(a.updated_at);
+                    case 'stars':
+                        return b.stargazers_count - a.stargazers_count;
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'created':
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    default:
+                        return 0;
+                }
+            });
+        }
+
+        function displayRepositories() {
+            const container = document.getElementById('reposContainer');
+
+            if (filteredRepos.length === 0) {
+                container.innerHTML = '<div class="no-repos">No repositories found</div>';
+                return;
+            }
+
+            const reposHtml = filteredRepos.map(repo => {
+                const lastCommit = new Date(repo.updated_at);
+                const now = new Date();
+                const diffTime = Math.abs(now - lastCommit);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                let timeAgo;
+                if (diffDays === 0) {
+                    timeAgo = 'Today';
+                } else if (diffDays === 1) {
+                    timeAgo = 'Yesterday';
+                } else if (diffDays < 30) {
+                    timeAgo = `${diffDays} days ago`;
+                } else if (diffDays < 365) {
+                    timeAgo = `${Math.floor(diffDays / 30)} months ago`;
+                } else {
+                    timeAgo = `${Math.floor(diffDays / 365)} years ago`;
+                }
+
+                return `
+                    <div class="repo-card">
+                        <div class="repo-header">
+                            <a href="${repo.html_url}" target="_blank" class="repo-name">${repo.name}</a>
+                            <span class="repo-visibility ${repo.private ? 'private' : 'public'}">
+                                ${repo.private ? '🔒 Private' : '🌍 Public'}
+                            </span>
+                        </div>
+
+                        ${repo.description ? `<div class="repo-description">${repo.description}</div>` : ''}
+
+                        <div class="repo-stats">
+                            ${repo.language ? `<span class="language-tag">${repo.language}</span>` : ''}
+                            <span class="repo-stat">⭐ ${repo.stargazers_count} stars</span>
+                            <span class="repo-stat">🔄 ${repo.forks_count} forks</span>
+                            <span class="repo-stat">📝 ~${repo.commitCount} commits</span>
+                            <span class="repo-stat">👥 ${repo.contributorsCount} contributor${repo.contributorsCount !== 1 ? 's' : ''}</span>
+                            ${repo.fork ? '<span class="repo-stat">🍴 Forked</span>' : ''}
+                        </div>
+
+                        <div class="last-commit">Last updated: ${timeAgo}</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `<div class="repo-list">${reposHtml}</div>`;
+        }
+
+        function handleSearch(e) {
+            filterAndDisplayRepos();
+        }
+
+        function handleSortChange(e) {
+            currentSort = e.target.value;
+            filterAndDisplayRepos();
+        }
+
+        function showDashboard() {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('userSection').style.display = 'block';
+            document.getElementById('mainContent').style.display = 'block';
+        }
+
+        function logout() {
+            localStorage.removeItem('github_token');
+            localStorage.removeItem('github_oauth_client_id');
+            accessToken = null;
+            allRepos = [];
+            filteredRepos = [];
+            userData = null;
+
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('userSection').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('tokenInput').value = '';
+            document.getElementById('clientIdInput').value = '';
+        }
+    </script>
+</body>
+</html>
