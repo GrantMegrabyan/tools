@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .game-board {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .tile {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #d3d6da;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .tile.filled {
+            border-color: #878a8c;
+            animation: pop 0.1s ease;
+        }
+
+        .tile.correct {
+            background: #6aaa64;
+            color: white;
+            border-color: #6aaa64;
+        }
+
+        .tile.present {
+            background: #c9b458;
+            color: white;
+            border-color: #c9b458;
+        }
+
+        .tile.absent {
+            background: #787c7e;
+            color: white;
+            border-color: #787c7e;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 20px;
+        }
+
+        .keyboard-row {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .key {
+            background: #d3d6da;
+            border: none;
+            padding: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            min-width: 32px;
+            transition: all 0.2s ease;
+        }
+
+        .key:hover {
+            background: #bbb;
+        }
+
+        .key.wide {
+            min-width: 60px;
+        }
+
+        .key.correct {
+            background: #6aaa64;
+            color: white;
+        }
+
+        .key.present {
+            background: #c9b458;
+            color: white;
+        }
+
+        .key.absent {
+            background: #787c7e;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .setting-group {
+            margin-bottom: 20px;
+        }
+
+        .setting-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .setting-group select,
+        .setting-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #d3d6da;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+        }
+
+        .message {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .message.win {
+            color: #6aaa64;
+        }
+
+        .message.lose {
+            color: #dc3545;
+        }
+
+        .end-game-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            margin: 20px 0;
+        }
+
+        .definition-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .definition-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .definition-box p {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .tile {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+
+            .key {
+                padding: 12px 8px;
+                font-size: 0.8rem;
+                min-width: 28px;
+            }
+
+            .key.wide {
+                min-width: 50px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .tile {
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+            }
+
+            .key {
+                padding: 10px 6px;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Wordle</h1>
+            <div class="header-buttons">
+                <button id="settingsBtn">⚙️ Settings</button>
+                <button id="newGameBtn">🔄 New Game</button>
+            </div>
+        </header>
+
+        <div id="loading" class="loading" style="display: none;">
+            Loading word...
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <div id="gameBoard" class="game-board"></div>
+
+        <div class="keyboard">
+            <div class="keyboard-row">
+                <button class="key" data-key="Q">Q</button>
+                <button class="key" data-key="W">W</button>
+                <button class="key" data-key="E">E</button>
+                <button class="key" data-key="R">R</button>
+                <button class="key" data-key="T">T</button>
+                <button class="key" data-key="Y">Y</button>
+                <button class="key" data-key="U">U</button>
+                <button class="key" data-key="I">I</button>
+                <button class="key" data-key="O">O</button>
+                <button class="key" data-key="P">P</button>
+            </div>
+            <div class="keyboard-row">
+                <button class="key" data-key="A">A</button>
+                <button class="key" data-key="S">S</button>
+                <button class="key" data-key="D">D</button>
+                <button class="key" data-key="F">F</button>
+                <button class="key" data-key="G">G</button>
+                <button class="key" data-key="H">H</button>
+                <button class="key" data-key="J">J</button>
+                <button class="key" data-key="K">K</button>
+                <button class="key" data-key="L">L</button>
+            </div>
+            <div class="keyboard-row">
+                <button class="key wide" data-key="Enter">Enter</button>
+                <button class="key" data-key="Z">Z</button>
+                <button class="key" data-key="X">X</button>
+                <button class="key" data-key="C">C</button>
+                <button class="key" data-key="V">V</button>
+                <button class="key" data-key="B">B</button>
+                <button class="key" data-key="N">N</button>
+                <button class="key" data-key="M">M</button>
+                <button class="key wide" data-key="Backspace">⌫</button>
+            </div>
+        </div>
+
+        <div id="endGameButtons" class="end-game-buttons" style="display: none;">
+            <button id="definitionBtn">📖 Definition</button>
+        </div>
+
+        <div id="definitionBox" class="definition-box" style="display: none;"></div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <h2>Game Settings</h2>
+            <div class="setting-group">
+                <label for="wordLength">Word Length:</label>
+                <select id="wordLength">
+                    <option value="4">4 letters</option>
+                    <option value="5" selected>5 letters</option>
+                    <option value="6">6 letters</option>
+                    <option value="7">7 letters</option>
+                    <option value="8">8 letters</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="maxAttempts">Number of Attempts:</label>
+                <select id="maxAttempts">
+                    <option value="4">4 attempts</option>
+                    <option value="5">5 attempts</option>
+                    <option value="6" selected>6 attempts</option>
+                    <option value="7">7 attempts</option>
+                    <option value="8">8 attempts</option>
+                    <option value="9">9 attempts</option>
+                    <option value="10">10 attempts</option>
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button id="cancelSettings">Cancel</button>
+                <button id="saveSettings">Save & New Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let targetWord = '';
+        let currentRow = 0;
+        let currentTile = 0;
+        let gameOver = false;
+        let wordLength = 5;
+        let maxAttempts = 6;
+
+        // DOM elements
+        const gameBoard = document.getElementById('gameBoard');
+        const message = document.getElementById('message');
+        const settingsModal = document.getElementById('settingsModal');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const newGameBtn = document.getElementById('newGameBtn');
+        const cancelSettings = document.getElementById('cancelSettings');
+        const saveSettings = document.getElementById('saveSettings');
+        const wordLengthSelect = document.getElementById('wordLength');
+        const maxAttemptsSelect = document.getElementById('maxAttempts');
+        const loading = document.getElementById('loading');
+        const endGameButtons = document.getElementById('endGameButtons');
+        const definitionBtn = document.getElementById('definitionBtn');
+        const definitionBox = document.getElementById('definitionBox');
+
+        // Initialize game
+        async function initGame() {
+            gameOver = false;
+            currentRow = 0;
+            currentTile = 0;
+            message.textContent = '';
+            message.className = 'message';
+            endGameButtons.style.display = 'none';
+            definitionBox.style.display = 'none';
+            resetKeyboard();
+            createBoard();
+            await fetchRandomWord();
+        }
+
+        // Create game board
+        function createBoard() {
+            gameBoard.innerHTML = '';
+            for (let i = 0; i < maxAttempts; i++) {
+                const row = document.createElement('div');
+                row.className = 'row';
+                for (let j = 0; j < wordLength; j++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'tile';
+                    tile.setAttribute('data-row', i);
+                    tile.setAttribute('data-tile', j);
+                    row.appendChild(tile);
+                }
+                gameBoard.appendChild(row);
+            }
+        }
+
+        // Fetch random word from API
+        async function fetchRandomWord() {
+            loading.style.display = 'block';
+            gameBoard.style.opacity = '0.5';
+
+            try {
+                const response = await fetch(`https://random-word-api.herokuapp.com/word?length=${wordLength}`);
+                const data = await response.json();
+
+                if (data && data[0]) {
+                    targetWord = data[0].toUpperCase();
+                    console.log('Target word:', targetWord); // For debugging
+                } else {
+                    throw new Error('No word received');
+                }
+            } catch (error) {
+                console.error('Error fetching word:', error);
+                message.textContent = 'Error loading word. Using fallback.';
+                message.className = 'message lose';
+                // Fallback words
+                const fallbackWords = {
+                    4: ['WORD', 'GAME', 'PLAY', 'TIME'],
+                    5: ['HELLO', 'WORLD', 'BRAIN', 'POWER'],
+                    6: ['RANDOM', 'PUZZLE', 'LETTER', 'WINNER'],
+                    7: ['AMAZING', 'COMPLEX', 'DIGITAL', 'PATTERN'],
+                    8: ['COMPUTER', 'ABSTRACT', 'KEYBOARD', 'VALIDATE']
+                };
+                const words = fallbackWords[wordLength] || fallbackWords[5];
+                targetWord = words[Math.floor(Math.random() * words.length)];
+            } finally {
+                loading.style.display = 'none';
+                gameBoard.style.opacity = '1';
+            }
+        }
+
+        // Handle key press
+        function handleKey(key) {
+            if (gameOver) return;
+
+            if (key === 'Enter') {
+                submitGuess();
+            } else if (key === 'Backspace') {
+                deleteLetter();
+            } else if (/^[A-Za-z]$/.test(key)) {
+                addLetter(key.toUpperCase());
+            }
+        }
+
+        // Add letter to current tile
+        function addLetter(letter) {
+            if (currentTile < wordLength) {
+                const tile = document.querySelector(`[data-row="${currentRow}"][data-tile="${currentTile}"]`);
+                tile.textContent = letter;
+                tile.classList.add('filled');
+                currentTile++;
+            }
+        }
+
+        // Delete letter from current tile
+        function deleteLetter() {
+            if (currentTile > 0) {
+                currentTile--;
+                const tile = document.querySelector(`[data-row="${currentRow}"][data-tile="${currentTile}"]`);
+                tile.textContent = '';
+                tile.classList.remove('filled');
+            }
+        }
+
+        // Submit guess
+        function submitGuess() {
+            if (currentTile !== wordLength) {
+                showMessage('Not enough letters', 'lose', 1500);
+                return;
+            }
+
+            const guess = getCurrentGuess();
+            checkGuess(guess);
+
+            if (guess === targetWord) {
+                gameOver = true;
+                message.textContent = '🎉 Congratulations! You won!';
+                message.className = 'message win';
+                endGameButtons.style.display = 'flex';
+            } else if (currentRow === maxAttempts - 1) {
+                gameOver = true;
+                message.textContent = `Game Over! The word was: ${targetWord}`;
+                message.className = 'message lose';
+                endGameButtons.style.display = 'flex';
+            } else {
+                currentRow++;
+                currentTile = 0;
+            }
+        }
+
+        // Get current guess
+        function getCurrentGuess() {
+            let guess = '';
+            for (let i = 0; i < wordLength; i++) {
+                const tile = document.querySelector(`[data-row="${currentRow}"][data-tile="${i}"]`);
+                guess += tile.textContent;
+            }
+            return guess;
+        }
+
+        // Check guess against target word
+        function checkGuess(guess) {
+            const targetLetters = targetWord.split('');
+            const guessLetters = guess.split('');
+            const letterStatus = new Array(wordLength).fill('absent');
+
+            // First pass: mark correct letters
+            for (let i = 0; i < wordLength; i++) {
+                if (guessLetters[i] === targetLetters[i]) {
+                    letterStatus[i] = 'correct';
+                    targetLetters[i] = null;
+                }
+            }
+
+            // Second pass: mark present letters
+            for (let i = 0; i < wordLength; i++) {
+                if (letterStatus[i] === 'correct') continue;
+
+                const letterIndex = targetLetters.indexOf(guessLetters[i]);
+                if (letterIndex !== -1) {
+                    letterStatus[i] = 'present';
+                    targetLetters[letterIndex] = null;
+                }
+            }
+
+            // Apply colors to tiles and keyboard
+            for (let i = 0; i < wordLength; i++) {
+                const tile = document.querySelector(`[data-row="${currentRow}"][data-tile="${i}"]`);
+                setTimeout(() => {
+                    tile.classList.add(letterStatus[i]);
+                }, i * 200);
+
+                updateKeyboard(guessLetters[i], letterStatus[i]);
+            }
+        }
+
+        // Update keyboard colors
+        function updateKeyboard(letter, status) {
+            const key = document.querySelector(`[data-key="${letter}"]`);
+            if (!key) return;
+
+            const currentStatus = key.classList.contains('correct') ? 'correct' :
+                                 key.classList.contains('present') ? 'present' :
+                                 key.classList.contains('absent') ? 'absent' : '';
+
+            if (status === 'correct' || (status === 'present' && currentStatus !== 'correct') ||
+                (status === 'absent' && !currentStatus)) {
+                key.classList.remove('correct', 'present', 'absent');
+                key.classList.add(status);
+            }
+        }
+
+        // Reset keyboard colors
+        function resetKeyboard() {
+            document.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('correct', 'present', 'absent');
+            });
+        }
+
+        // Show temporary message
+        function showMessage(text, className, duration) {
+            message.textContent = text;
+            message.className = `message ${className}`;
+            setTimeout(() => {
+                if (message.textContent === text) {
+                    message.textContent = '';
+                    message.className = 'message';
+                }
+            }, duration);
+        }
+
+        // Fetch and display word definition
+        async function fetchDefinition() {
+            definitionBox.style.display = 'block';
+            definitionBox.innerHTML = '<p>Loading definition...</p>';
+
+            try {
+                const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${targetWord.toLowerCase()}`);
+
+                if (!response.ok) {
+                    throw new Error('Definition not found');
+                }
+
+                const data = await response.json();
+                displayDefinition(data[0]);
+            } catch (error) {
+                console.error('Error fetching definition:', error);
+                definitionBox.innerHTML = `
+                    <h3>${targetWord}</h3>
+                    <p>Definition not available. <a href="https://www.google.com/search?q=define+${targetWord.toLowerCase()}" target="_blank">Search on Google</a></p>
+                `;
+            }
+        }
+
+        // Display definition
+        function displayDefinition(data) {
+            let html = `<h3>${data.word}</h3>`;
+
+            if (data.phonetic) {
+                html += `<p><em>${data.phonetic}</em></p>`;
+            }
+
+            data.meanings.forEach(meaning => {
+                html += `<p><strong>${meaning.partOfSpeech}</strong></p>`;
+                meaning.definitions.slice(0, 2).forEach((def, index) => {
+                    html += `<p>${index + 1}. ${def.definition}</p>`;
+                    if (def.example) {
+                        html += `<p><em>Example: "${def.example}"</em></p>`;
+                    }
+                });
+            });
+
+            definitionBox.innerHTML = html;
+        }
+
+        // Event listeners
+        document.addEventListener('keydown', (e) => {
+            handleKey(e.key);
+        });
+
+        document.querySelectorAll('.key').forEach(key => {
+            key.addEventListener('click', () => {
+                handleKey(key.getAttribute('data-key'));
+            });
+        });
+
+        settingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('active');
+        });
+
+        cancelSettings.addEventListener('click', () => {
+            settingsModal.classList.remove('active');
+        });
+
+        saveSettings.addEventListener('click', () => {
+            wordLength = parseInt(wordLengthSelect.value);
+            maxAttempts = parseInt(maxAttemptsSelect.value);
+            settingsModal.classList.remove('active');
+            initGame();
+        });
+
+        newGameBtn.addEventListener('click', () => {
+            initGame();
+        });
+
+        definitionBtn.addEventListener('click', () => {
+            fetchDefinition();
+        });
+
+        // Close modal when clicking outside
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                settingsModal.classList.remove('active');
+            }
+        });
+
+        // Start the game
+        initGame();
+    </script>
+</body>
+</html>
